@@ -68,6 +68,8 @@ This enables auditability, manual overrides, and transparency.
 
 ## Project Structure
 
+```
+
 zipboard/
 ├── app/
 │ ├── main.py
@@ -93,6 +95,8 @@ zipboard/
 │
 ├── requirements.txt
 └── README.md
+
+```
 
 ---
 
