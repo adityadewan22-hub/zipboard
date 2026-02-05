@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import json
-from app.services.extactor import extract_article
+from app.extractors.extractor import extract_article
 
 sitemap_url = "https://help.zipboard.co/sitemap.xml"
 

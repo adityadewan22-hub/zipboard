@@ -1,5 +1,5 @@
-from app.services.run_article_audit import run_article_audit
-from app.services.run_gap_synthesis import run_gap_synthesis
+from app.pipelines.run_article_audit import run_article_audit
+from app.pipelines.run_gap_synthesis import run_gap_synthesis
 
 
 def run_full_audit(excel_path: str):

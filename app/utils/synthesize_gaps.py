@@ -1,5 +1,5 @@
-from app.utils.generation import call_gemini
-from app.utils.prompt_builder import build_gap_prompt
+from app.llm.generation import call_gemini
+from app.llm.prompt_builder import build_gap_prompt
 
 def synthesize_gaps(records):
     """

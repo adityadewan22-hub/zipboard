@@ -1,6 +1,6 @@
-from app.utils.generation import call_gemini
-from app.utils.prompt_builder import build_gap_prompt
-from app.utils.deduplication import deduplicate_gaps
+from app.llm.generation import call_gemini
+from app.llm.prompt_builder import build_gap_prompt
+from app.processing.deduplication import deduplicate_gaps
 import pandas as pd
 
 def generate_gap_report(df):
