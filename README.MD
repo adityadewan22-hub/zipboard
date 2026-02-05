@@ -87,7 +87,8 @@ zipboard/
 ├── data/
 │ └── zipboard_help_articles.xlsx
 │
-├── .github/workflows/
+├── .github/
+│ └── workflows/
 │ └── daily_audit.yml
 │
 ├── requirements.txt
