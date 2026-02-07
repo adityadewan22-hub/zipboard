@@ -1,4 +1,4 @@
-from app.services.run_gap_synthesis import run_gap_synthesis
+from app.pipelines.run_gap_synthesis import run_gap_synthesis
 from app.config import EXCEL_PATH
 
 def main():

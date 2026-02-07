@@ -1,5 +1,8 @@
+import time
+import random
 import pandas as pd
 from dotenv import load_dotenv
+from requests.exceptions import HTTPError
 
 from app.extractors.fetch_article_content import fetch_article_content
 from app.processing.compute_hash import compute_content_hash
@@ -18,7 +21,16 @@ def run_article_audit(excel_path: str):
         if col in df.columns:
             df[col] = df[col].fillna("").astype(str)
 
+    MAX_ARTICLES_PER_RUN = 50   # safety cap for CI
+    processed = 0
+
+    print(f"[Audit] Starting article audit for {len(df)} articles")
+
     for idx, row in df.iterrows():
+
+        if processed >= MAX_ARTICLES_PER_RUN:
+            print("[Audit] Reached per-run processing limit, stopping early")
+            break
 
         # 1️⃣ Scope gate (manual control)
         if not row["analysis_scope"]:
@@ -26,13 +38,19 @@ def run_article_audit(excel_path: str):
 
         url = row["URL"]
 
-        # 2️⃣ Fetch normalized content 
-        text = fetch_article_content(url)
+        # 2️⃣ Fetch normalized content (with rate-limit handling)
+        try:
+            text = fetch_article_content(url)
+        except HTTPError as e:
+            if e.response is not None and e.response.status_code == 429:
+                print(f"[Audit] Rate limited on {url}, skipping for now")
+                continue
+            raise
 
-        # 3️⃣ Compute hash 
+        # 3️⃣ Compute hash
         new_hash = compute_content_hash(text)
 
-        # 4️⃣ Detect state 
+        # 4️⃣ Detect state
         state = detect_article_state(row["content_hash"], new_hash)
 
         # 5️⃣ Skip unchanged
@@ -42,7 +60,7 @@ def run_article_audit(excel_path: str):
         # 6️⃣ Persist hash immediately (state correctness)
         df.at[idx, "content_hash"] = new_hash
 
-        # 7️⃣ LLM analysis 
+        # 7️⃣ LLM analysis
         prompt = build_article_analysis_prompt(
             article_text=text,
             article_title=row["article_title"],
@@ -56,5 +74,12 @@ def run_article_audit(excel_path: str):
         df.at[idx, "gaps_identified"] = "; ".join(llm_result["gaps_identified"])
         df.at[idx, "last_llm_run"] = pd.Timestamp.utcnow().isoformat()
 
+        processed += 1
+
+        # Polite throttling between requests
+        time.sleep(random.uniform(2.0, 4.0))
+
     # Persist once, after all rows
     df.to_excel(excel_path, index=False)
+
+    print(f"[Audit] Completed. Processed {processed} articles this run.")
